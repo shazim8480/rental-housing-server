@@ -159,7 +159,7 @@ const run = async () => {
 run().catch((err) => console.log(err));
 
 app.get("/", (req, res) => {
-  res.send("Welcome to bookstore mania!");
+  res.send("Welcome to Rental Housing Server!");
 });
 
 app.listen(port, () => {
