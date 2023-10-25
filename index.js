@@ -102,6 +102,7 @@ const run = async () => {
       try {
         // Insert the user into the collection
         const result = await registeredUsersCollection.insertOne(user);
+        console.log("inserted registered user count", result.insertedCount);
 
         // Check if the insertion was successful
         if (result.insertedCount === 1) {
@@ -173,35 +174,25 @@ const run = async () => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Assuming you have a user collection and are adding a new user
-        const user = {
+        // Create a new user object with hashed password
+        const newUser = {
           name,
           email,
-          password: hashedPassword, // Store the hashed password
+          password: hashedPassword,
           profileData: {
             accountRole: "default",
           },
         };
 
-        const result = await userCollection.insertOne(user);
-
-        if (result.insertedCount === 1) {
-          // For demonstration purposes, assuming successful signup
-          res.json({
-            status: true,
-            accountRole: user?.profileData?.accountRole,
-          });
-          console.log("user inserted count", result.insertedCount);
-          console.log("User added successfully", result);
-        } else {
-          console.error("Failed to insert user:", result);
-          res.status(500).json({
-            status: false,
-            error: "Failed to add user",
-            mongoError:
-              result && result.errmsg ? result.errmsg : "Unknown error",
-          });
-        }
+        // Insert the new user into the collection
+        const result = await userCollection.insertOne(newUser);
+        console.log("app.post ~ result:", result);
+        res.json({
+          status: 200,
+          name: newUser?.name,
+          email: newUser?.email,
+          accountRole: newUser?.profileData?.accountRole,
+        });
       } catch (error) {
         console.error("Error during signup:", error.message);
         res.status(500).json({ status: false, error: "Signup failed" });
@@ -235,7 +226,12 @@ const run = async () => {
         // You can use a library like jsonwebtoken to generate tokens
 
         // Assuming successful sign-in
-        res.json({ status: true, accountRole: user.profileData.accountRole });
+        res.json({
+          status: true,
+          name: user?.name,
+          email: user?.email,
+          accountRole: user.profileData.accountRole,
+        });
       } catch (error) {
         console.error("Error during sign-in:", error.message);
         res.status(500).json({ status: false, error: "Sign-in failed" });
