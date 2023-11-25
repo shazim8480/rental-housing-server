@@ -170,15 +170,11 @@ const run = async () => {
           });
         }
 
-        // Generate a salt and hash the password with bcrypt
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Create a new user object with hashed password
+        // Create a new user object without hashing the password
         const newUser = {
           name,
           email,
-          password: hashedPassword,
+          password, // Store password as provided
           profileData: {
             accountRole: "default",
           },
@@ -189,9 +185,9 @@ const run = async () => {
         console.log("app.post ~ result:", result);
         res.json({
           status: 200,
-          name: newUser?.name,
-          email: newUser?.email,
-          accountRole: newUser?.profileData?.accountRole,
+          name: newUser.name,
+          email: newUser.email,
+          accountRole: newUser.profileData.accountRole,
         });
       } catch (error) {
         console.error("Error during signup:", error.message);
@@ -213,10 +209,8 @@ const run = async () => {
             .json({ status: false, error: "Invalid credentials" });
         }
 
-        // Compare the provided password with the hashed password in the database
-        const passwordMatch = await bcrypt.compare(password, user.password);
-
-        if (!passwordMatch) {
+        // Compare the provided password directly with the password in the database
+        if (password !== user.password) {
           return res
             .status(401)
             .json({ status: false, error: "Invalid credentials" });
@@ -226,10 +220,11 @@ const run = async () => {
         // You can use a library like jsonwebtoken to generate tokens
 
         // Assuming successful sign-in
+        console.log("user signed in successfully", user);
         res.json({
           status: true,
-          name: user?.name,
-          email: user?.email,
+          name: user.name,
+          email: user.email,
           accountRole: user.profileData.accountRole,
         });
       } catch (error) {
