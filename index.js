@@ -95,7 +95,7 @@ const run = async () => {
     });
 
     // *** Registered users collection //
-    // register a user to the "registered-users" collection
+    // register a user to the selected property
     app.post("/api/register-user", async (req, res) => {
       const user = req.body;
 
@@ -233,15 +233,42 @@ const run = async () => {
       }
     });
 
+    // Get Profile by Email API
+    app.get("/api/get-profile", async (req, res) => {
+      const email = req.query.email; // Assuming email is passed as a query parameter
+
+      try {
+        // Assuming you have a user collection and are searching by email
+        const user = await userCollection.findOne({ email: email });
+
+        if (!user) {
+          return res
+            .status(404)
+            .json({ status: false, error: "User not found" });
+        }
+        console.log("user profile fetched successfully", user);
+        res.json({
+          status: true,
+          userProfile: user.profileData, // Assuming user has a field named 'profileData'
+        });
+      } catch (error) {
+        console.error("Error fetching user profile by email:", error.message);
+        res.status(500).json({
+          status: false,
+          error: "Failed to fetch user profile by email",
+        });
+      }
+    });
+
     // User Profile Update API
-    app.put("/api/update-profile/:id", async (req, res) => {
-      const userId = req.params.id;
+    app.put("/api/update-profile", async (req, res) => {
+      const email = req.body.email; // Assuming email is sent in the request body
       const updatedProfileData = req.body.profileData;
 
       try {
-        // Assuming you have a user collection and are updating the user profileData
+        // Assuming you have a user collection and are updating the user profileData by email
         const result = await userCollection.updateOne(
-          { _id: ObjectId(userId) },
+          { email: email },
           { $set: { profileData: updatedProfileData } }
         );
 
@@ -256,10 +283,11 @@ const run = async () => {
           message: "User profile updated successfully",
         });
       } catch (error) {
-        console.error("Error updating user profile:", error.message);
-        res
-          .status(500)
-          .json({ status: false, error: "Failed to update user profile" });
+        console.error("Error updating user profile by email:", error.message);
+        res.status(500).json({
+          status: false,
+          error: "Failed to update user profile by email",
+        });
       }
     });
   } finally {
